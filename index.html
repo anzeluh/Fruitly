@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#FFB399" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Fruitly" />
+  <title>Fruit Scanner</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===== SPLASH SCREEN ===== -->
+  <div id="splash-screen">
+    <div class="splash-bg"></div>
+    <div class="splash-content">
+      <div class="splash-logo">
+        <div class="logo-ring ring1"></div>
+        <div class="logo-ring ring2"></div>
+        <div class="logo-icon">🍎</div>
+      </div>
+      <h1 class="splash-title">Fruitly</h1>
+      <p class="splash-sub">AI-Powered Fruit Recognition</p>
+      <div class="splash-loader">
+        <div class="loader-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MAIN APP ===== -->
+  <div id="app" class="hidden">
+
+    <!-- ===== PAGE: HOME ===== -->
+    <div class="page active" id="page-home">
+      <div class="page-header">
+        <div class="header-left">
+          <h2 class="page-title">Fruitly</h2>
+          <p class="page-subtitle">Identify any fruit instantly</p>
+        </div>
+        <div class="header-right">
+          <div class="model-badge" id="model-status-badge">
+            <div class="badge-dot loading"></div>
+            <span>Loading AI</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="home-hero">
+        <div class="hero-card">
+          <div class="hero-visual">
+            <div class="fruit-orbit">
+              <span class="orbit-fruit f1">🍎</span>
+              <span class="orbit-fruit f2">🍊</span>
+              <span class="orbit-fruit f3">🍋</span>
+              <span class="orbit-fruit f4">🍇</span>
+              <span class="orbit-fruit f5">🍓</span>
+              <span class="orbit-fruit f6">🥭</span>
+            </div>
+            <div class="hero-center-icon">🔍</div>
+          </div>
+          <h3 class="hero-title">Scan Any Fruit</h3>
+          <p class="hero-desc">Point your camera or upload a photo. Our AI identifies fruits with high accuracy in seconds.</p>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <button class="action-card" onclick="navigateTo('camera')">
+          <div class="action-icon cam-icon">📷</div>
+          <span class="action-label">Camera</span>
+          <span class="action-desc">Live scan</span>
+        </button>
+        <button class="action-card" onclick="navigateTo('upload')">
+          <div class="action-icon upload-icon">🖼️</div>
+          <span class="action-label">Upload</span>
+          <span class="action-desc">From gallery</span>
+        </button>
+        <button class="action-card" onclick="navigateTo('history')">
+          <div class="action-icon hist-icon">📜</div>
+          <span class="action-label">History</span>
+          <span class="action-desc">Past scans</span>
+        </button>
+      </div>
+
+      <!-- Recent scans on home -->
+      <div class="section-header">
+        <h3 class="section-title">Recent Scans</h3>
+        <button class="see-all-btn" onclick="navigateTo('history')">See All</button>
+      </div>
+      <div class="recent-list" id="home-recent-list">
+        <div class="empty-recent">
+          <span class="empty-icon">🍃</span>
+          <p>No scans yet. Try scanning a fruit!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PAGE: CAMERA ===== -->
+    <div class="page" id="page-camera">
+      <div class="camera-wrapper">
+        <div class="camera-top-bar">
+          <button class="icon-btn back-btn" onclick="navigateTo('home')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+          </button>
+          <span class="camera-title">Live Camera</span>
+          <button class="icon-btn flip-btn" id="flip-camera-btn" onclick="flipCamera()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+          </button>
+        </div>
+
+        <div class="camera-feed-container">
+          <video id="camera-video" autoplay playsinline muted></video>
+          <canvas id="camera-overlay" class="camera-overlay"></canvas>
+          <div class="scan-frame">
+            <div class="scan-corner tl"></div>
+            <div class="scan-corner tr"></div>
+            <div class="scan-corner bl"></div>
+            <div class="scan-corner br"></div>
+            <div class="scan-line"></div>
+          </div>
+          <div class="camera-hint" id="camera-hint">Center the fruit in the frame</div>
+
+          <!-- Camera result overlay -->
+          <div class="camera-result-overlay hidden" id="camera-result-overlay">
+            <div class="cam-result-card">
+              <div class="cam-result-emoji" id="cam-result-emoji">🍎</div>
+              <div class="cam-result-name" id="cam-result-name">Apple</div>
+              <div class="cam-result-conf" id="cam-result-conf">98.5%</div>
+              <button class="cam-details-btn" onclick="openFruitInfoFromCamera()">View Details ↓</button>
+            </div>
+          </div>
+
+          <!-- Camera permission denied -->
+          <div class="camera-denied hidden" id="camera-denied">
+            <div class="denied-icon">📵</div>
+            <p class="denied-text">Camera access denied</p>
+            <p class="denied-sub">Please allow camera permission in your browser settings.</p>
+            <button class="retry-btn" onclick="startCamera()">Try Again</button>
+          </div>
+        </div>
+
+        <div class="camera-controls">
+          <button class="gallery-btn" onclick="navigateTo('upload')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </button>
+          <button class="shutter-btn" id="shutter-btn" onclick="captureAndPredict()">
+            <div class="shutter-inner"></div>
+          </button>
+          <div class="cam-placeholder"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PAGE: UPLOAD ===== -->
+    <div class="page" id="page-upload">
+      <div class="page-header sticky-header">
+        <button class="icon-btn" onclick="navigateTo('home')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        </button>
+        <h2 class="page-title-sm">Upload & Scan</h2>
+        <div style="width:36px"></div>
+      </div>
+
+      <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()">
+        <input type="file" id="file-input" accept="image/*" onchange="handleFileUpload(event)" hidden />
+        <div class="upload-placeholder" id="upload-placeholder">
+          <div class="upload-icon-wrap">
+            <span class="upload-emoji">🖼️</span>
+          </div>
+          <p class="upload-title">Tap to select a photo</p>
+          <p class="upload-hint">JPG, PNG, WEBP supported</p>
+        </div>
+        <img id="upload-preview" class="upload-preview hidden" alt="Preview" />
+      </div>
+
+      <div class="upload-result-section hidden" id="upload-result-section">
+        <div class="result-card" id="upload-result-card">
+          <div class="result-header">
+            <div class="result-emoji-big" id="result-emoji-big">🍎</div>
+            <div class="result-info">
+              <div class="result-fruit-name" id="result-fruit-name">Apple</div>
+              <div class="result-confidence-text" id="result-confidence-text">Confidence: 98.5%</div>
+            </div>
+          </div>
+          <div class="confidence-bar-wrap">
+            <div class="confidence-bar-track">
+              <div class="confidence-bar-fill" id="confidence-bar-fill"></div>
+            </div>
+          </div>
+          <div class="top-predictions" id="top-predictions"></div>
+          <!-- Fruit Info Panel -->
+          <div class="fruit-info-panel hidden" id="fruit-info-panel">
+            <div class="info-tabs">
+              <button class="info-tab active" data-tab="benefits" onclick="switchInfoTab('benefits', this)">✅ Benefits</button>
+              <button class="info-tab" data-tab="pros" onclick="switchInfoTab('pros', this)">👍 Pros</button>
+              <button class="info-tab" data-tab="cons" onclick="switchInfoTab('cons', this)">👎 Cons</button>
+              <button class="info-tab" data-tab="cautions" onclick="switchInfoTab('cautions', this)">⚠️ Cautions</button>
+              <button class="info-tab" data-tab="avoid" onclick="switchInfoTab('avoid', this)">🚫 Avoid</button>
+            </div>
+            <div class="info-tab-content" id="info-tab-content"></div>
+          </div>
+        <div class="result-actions">
+          <button class="rescan-btn" onclick="resetUpload()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Scan Another
+          </button>
+          <button class="save-btn" id="save-btn" onclick="saveCurrentScan()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Scan
+          </button>
+        </div>
+      </div>
+
+      <div class="analyzing-overlay hidden" id="analyzing-overlay">
+        <div class="analyzing-card">
+          <div class="analyzing-spinner"></div>
+          <p class="analyzing-text">Analyzing fruit…</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PAGE: HISTORY ===== -->
+    <div class="page" id="page-history">
+      <div class="page-header sticky-header">
+        <h2 class="page-title">Scan History</h2>
+        <button class="clear-all-btn" id="clear-all-btn" onclick="clearAllHistory()">Clear All</button>
+      </div>
+      <div class="history-list" id="history-list">
+        <div class="empty-history">
+          <span class="empty-history-icon">📭</span>
+          <p class="empty-history-text">No history yet</p>
+          <p class="empty-history-sub">Your scanned fruits will appear here</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== BOTTOM NAV ===== -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-page="home" onclick="navigateTo('home')">
+        <div class="nav-icon">🏠</div>
+        <span>Home</span>
+      </button>
+      <button class="nav-item" data-page="camera" onclick="navigateTo('camera')">
+        <div class="nav-icon">📷</div>
+        <span>Camera</span>
+      </button>
+      <button class="nav-item" data-page="upload" onclick="navigateTo('upload')">
+        <div class="nav-icon">🖼️</div>
+        <span>Upload</span>
+      </button>
+      <button class="nav-item" data-page="history" onclick="navigateTo('history')">
+        <div class="nav-icon">📜</div>
+        <span>History</span>
+      </button>
+    </nav>
+
+    <!-- ===== FRUIT INFO MODAL (camera result details) ===== -->
+    <div class="fruit-modal-overlay hidden" id="fruit-modal-overlay" onclick="closeFruitModal(event)">
+      <div class="fruit-modal" id="fruit-modal">
+        <div class="fruit-modal-header">
+          <div class="fruit-modal-emoji" id="modal-emoji">🍎</div>
+          <div>
+            <div class="fruit-modal-name" id="modal-name">Apple</div>
+            <div class="fruit-modal-conf" id="modal-conf">98.5% confidence</div>
+          </div>
+          <button class="modal-close-btn" onclick="closeFruitModal()">✕</button>
+        </div>
+        <div class="modal-info-tabs">
+          <button class="info-tab active" data-tab="benefits" onclick="switchModalTab('benefits', this)">✅ Benefits</button>
+          <button class="info-tab" data-tab="pros" onclick="switchModalTab('pros', this)">👍 Pros</button>
+          <button class="info-tab" data-tab="cons" onclick="switchModalTab('cons', this)">👎 Cons</button>
+          <button class="info-tab" data-tab="cautions" onclick="switchModalTab('cautions', this)">⚠️ Cautions</button>
+          <button class="info-tab" data-tab="avoid" onclick="switchModalTab('avoid', this)">🚫 Avoid</button>
+        </div>
+        <div class="info-tab-content" id="modal-tab-content"></div>
+      </div>
+    </div>
+
+    <!-- ===== MODEL LOADING OVERLAY ===== -->
+    <div class="model-loading-overlay" id="model-loading-overlay">
+      <div class="model-loading-card">
+        <div class="model-spinner"></div>
+        <p class="model-loading-title">Loading AI Model</p>
+        <p class="model-loading-sub">Please wait…</p>
+      </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast hidden" id="toast"></div>
+
+  </div><!-- #app -->
+
+  <!-- TensorFlow.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
